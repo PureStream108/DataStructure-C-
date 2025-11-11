@@ -30,7 +30,7 @@ void AdjustDown(ElemType heap[], int current, int border){
     int p = current;
     int minChild;
     ElemType temp;
-    while(2 * p + 1 <= border){  // 若p不是叶结点，则执行
+    while(2 * p + 1 <= border){    // 若p不是叶结点，则执行
         if((2 * p + 2 <= border) && (heap[2 * p + 1] > heap[2 * p + 2]))
             minChild = 2 * p + 2;  // 右子树存在，且较小，则minChild指向p的右子树
         else
