@@ -7,6 +7,8 @@
 
 对应程序的内容所指）（Github右边可以展开目录）
 
+[TOC]
+
 ## 树
 
 binarytree.c（先序、中序、后序遍历）
@@ -288,13 +290,227 @@ BinaryTree CreateHFMTree(int w[], int m){
 
 
 
-
-
 ------
 
 ## 集合与搜索
 
-占位
+jihe1.c（有序表顺序搜索，无序表顺序搜索，有哨兵的有序表顺序搜索）
+
+jihe2.c（二分搜索）
+
+### 集合的抽象数据类型
+
+![](./image/jh1.png)
+
+![](./image/jh2.png)
+
+**常见的集合实现有三种：**
+
+- 线性表（本章节采用线性表）
+- 搜索树
+- 散列表
+
+**定义顺序表表示下的集合：**
+
+```c
+typedef struct {
+    int n;
+    int maxLength;
+    ElemType *element;
+}ListSet;
+```
+
+（ElementType表示可以比较的类型，要根据实际进行更改）
+
+### 顺序搜索
+
+**顺序表：**采用顺序存储表示来实现的线性表（申请连续的存储空间）
+
+**顺序搜索：**在进行元素查找时，从线性表第一个元素开始，按照位置从前到后依次的进行元素的查找
+
+**无序表的顺序搜索：**
+
+从第一个元素开始，将指定待查找的元素x的关键字与表中元素的关键字一一比较
+
+若相等，搜索成功；若搜索完整个表，不存在关键字值等于给定值的元素搜索失败，例如：
+
+ (41，25，28，33，36，15)
+
+33搜索成功! 35 搜索失败!（需要将每个元素都比较一遍）
+
+顺序搜索无序表的代码实现：
+
+```c
+int SeqSearch(ListSet L, ElemType x){
+    for(int i = 0; i < L.n; i++)
+        if(L.element[i] == x)      // 一个一个搜索直到搜索到为止
+            return i;
+    return -1;
+}
+```
+
+如果存在有序表（1， 25， 28， 33， 36， 45），我需要查找35，我可以对代码改动如下：
+
+```c
+int SeqSearchOrder(ListSet L, ElemType x){
+    for(int i = 0; i < L.n; i++){
+        if (L.element[i] == x)
+            return i;
+        else if(L.element[i] > x)    // 顺序表中是从小到大排列的
+            return -1;
+    }
+    return -1;
+}
+```
+
+也可以增加一个 **哨兵**（有序表最后添加一个无穷大的数）
+
+```c
+int SeqSearchSentry(ListSet L, ElemType x){
+    L.element[L.n] = MaxNum;              // 将最后一个设置为无穷大
+    for(int i = 0; L.element[i] < x; i++) 
+    // 让L中的每个元素跟x比较，若匹配到了最后一个哨兵还没有x，就说明搜索失败
+        if(L.element[i] == x)             // 一个一个搜索直到搜索到为止
+            return i;
+    return -1;
+}
+```
+
+**对有序表进行顺序搜索比无序表上进行顺序搜索速度更快？**
+
+错误。顺序搜索的时间复杂度在有序表和无序表上都是 O(n)，没有本质区别
+
+### 二分搜索
+
+此章节说明的二分搜索适用于有序表
+
+![](./image/jh3.png)
+
+**对半搜索是二分搜索中的一种，分割点为表的中点元素**： 
+$$
+m=\frac{low+high}{2}
+$$
+过程如下：
+
+![](./image/jh4.png)
+
+![](./image/jh5.png)
+
+关键代码：
+
+```c
+int BinarySearch(ListSet L, ElemType x, int low, int high){
+    if(low <= high){
+        int m = (low + high) / 2;
+        if(L.element[m] > x)
+            return BinarySearch(L, x, low, m - 1); // 中点比x大，说明x在左半边
+        else if(L.element[m] < x)
+            return BinarySearch(L, x, m + 1, high);// 中点比x小，说明x在右半边
+        else
+            return m;
+    }
+    else
+        return -1;
+}
+```
+
+也可以使用while循环：
+
+```c
+int BinarySearch(ListSet L, ElemType x){
+    int m, low = 0;
+    int high = L.n - 1;
+    while(low <= high){
+     	m = (low + high) / 2;
+        if(L.element[m] > x)
+            return BinarySearch(L, x, low, m - 1); // 中点比x大，说明x在左半边
+        else if(L.element[m] < x)
+            return BinarySearch(L, x, m + 1, high);// 中点比x小，说明x在右半边
+        else
+            return m;  
+    }    
+    return -1;
+}
+```
+
+### 平均搜索长度分析
+
+分析一个搜索算法的时间复杂度通常分搜索成功以及搜索失败两种情况加以讨论
+
+为了确定一个指定关键字值的记录在表中的位置，需要进行关键字值之间的比较，这些比较次数的期望值称为搜索
+
+算法的 **平均搜索长度( average search length ASL)**
+
+#### 无序表的顺序搜索
+
+(1)成功搜索的平均搜索长度
+
+设表中元素a,被搜索的概率p;，假定每个元素的搜索概率相等即 $$p_i=\frac{1}{n}$$ ，则搜索成功时的平均搜索长度为：
+$$
+ASL_s=\sum_{i=1}^{n}i \times p_i=\frac{1}{n}\sum_{i=1}^{n}=\frac{n+1}{2}
+$$
+(2)搜索失败的平均搜索长度
+
+该函数在搜索失败的情况下，总要进行 **n次** 关键字值之间的比较 
+
+#### 有序表的顺序搜索
+
+(1)成功搜索的平均搜索长度
+
+**与无序表相同**，其公式如下：
+$$
+ASL_s=\sum_{i=1}^{n}i \times p_i=\frac{1}{n}\sum_{i=1}^{n}=\frac{n+1}{2}
+$$
+(2)搜索失败的平均搜索长度
+
+在搜索失败的情况下，**平均搜索长度大约比无序时快一倍**，其公式如下：
+$$
+ASL_F=1+\sum_{i=1}^{n+1}i \times \frac{1}{n+1}=2+\frac{n}{2}
+$$
+其中，循坏内比较了 $$1+\frac{n}{2}$$ 次，判断跳出循环又比较了 $$1$$ 次
+
+![](./image/jh6.png)
+
+#### 二叉判定树构造
+
+![](./image/jh7.png)
+
+![](./image/jh8.png)
+
+这样子构造可以保证每个内结点的左子树都是关键字更小的结点，而右子树都是关键字更大的结点
+
+**搜索(二叉判定树T，k)**
+
+(1)将 (l = 根结点的关键字) 与 (k) 进行比较
+
+(2)如果 l=k，**成功搜索，返回**
+
+(4)如果 I>k，如果T的左子树不为空，**搜索(T的左子树，k)**
+
+**否则，搜索失败，返回**
+
+(5)如果 l<k，如果T的右子树不为空，**搜索(T的右子树，k)**
+
+**否则，搜索失败，返回**
+
+**如果搜索成功，则算法在内结点处终止；否则算法在外结点处终止**
+
+这样构造出来的二叉树有以下特征：(高度为 $$\lfloor log_2n \rfloor+1$$ 的二叉树 ) 
+
+- 任意结点左右子树上结点个数差 = 1
+- 左右子树高度差最多为 1
+
+**定理**  对半搜索算法在成功搜索的情况下，关键字值之间的比较次数不超过 $$\lfloor log_2n \rfloor+1$$;对于不成功的搜索，算法需要作 $$\lfloor log_2n \rfloor$$ 或 $$\lfloor log_2n \rfloor+1$$ 次比较 
+
+**定理** 对半搜索算法的成功/失败的平均时间复杂度为 $$O(log_2n)$$
+
+![](./image/jh9.png)
+
+
+
+
+
+------
 
 ## 搜索树
 
@@ -304,4 +520,6 @@ BinaryTree CreateHFMTree(int w[], int m){
 
 占位
 
+## 图论
 
+占位
