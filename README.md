@@ -1294,9 +1294,11 @@ graph4.c（拓扑排序）
 
 graph5.c（关键路径）
 
-graph6.c（最小代价生成树）
+graph6.c（最小代价生成树，普里姆算法）
 
-graph7.c（单元最短路径）
+graph7.c（克鲁斯卡尔算法）
+
+graph8.c（单元最短路径）
 
 ### 基本概念
 
@@ -2295,7 +2297,47 @@ B:错误
 对有 $$n$$ 个顶点、 $$e$$ 条边的图而言，其算法时间复杂度为 $$O(n^2)$$
 
 ```c
-void
+bool Prim(int k, int *closeVex, ElemType *lowWeight, LGraph g){
+    ENode *p;
+    ElemType min;
+    int *isMask = (int*)malloc(sizeof(int)*g.n);
+    if(k < 0 || k > g.n)
+        return false;
+    for(int i = 0; i < g.n; i++) // 初始化三个数组
+    {
+        closeVex[i] = -1;       // 对应nearest[]， 存放与顶点i距离最近且在生成树上的顶点
+        lowWeight[i] = INFTY;   // 存放边 (i,nearest[i]) 的权值
+        isMask[i] = 0;          // 标记顶点 i 是否已经在生成树上
+    }
+    lowWeight[k] = 0;
+    closeVex[k] = 0;
+    isMask[k] = 1;     // 以上三条说明源点加入生成树
+    for(int i = 1; i < g.n; i++){
+        for(p = g.a[k]; p; p = p -> NextArc){
+            j = p -> AdjVex;
+            if((!isMask[j]) && ((lowWeight[j] > p -> w)){ // 更新树外顶点的lowWeight值
+                lowWeight[j] = p -> w;                    // 初始都是0，第一遍约等于初始化
+                closeVex[j] = k;
+            }
+        }
+        min = INFTY;
+        for(int j = 0; j < g.n; j++)    // 找生成树外顶点中，具有最小lowWeight值的顶点k
+        {
+            if((!isMask[j]) && (lowWeight[j] < min)){
+                min = lowWeight[j];
+                k = j;
+            }
+        }
+        isMask[k] = 1;    // 将顶点加到生成树上
+    }
+    for(int i = 0; i < g.n; i++){
+        printf("%d ", closeVex[i]);
+        printf("%d ", i);
+        printf("%d ", lowWeight[i]);
+        printf("\n");
+    }
+    return true;
+}
 ```
 
 #### 克鲁斯卡尔算法
@@ -2364,6 +2406,59 @@ void
 
 - 若 $$vexSet[u]$$ 和 $$vexSet[v]$$ **不相等**，表示两顶点**属于不同连通分量**，输出此边，**合并** $$vexSet[u]$$ 和 $$vexSet[v]$$ 两个连通分量
 - 若 $$vexSet[u]$$ 和 $$vexSet[v]$$ **相等**，表示两顶点**属于同一连通分量**，舍去此边，而选择下一条权值最小的边
+
+**算法代码如下**：
+
+```c
+void SelectSort(Edge *eg, int n){
+    int small;
+    Edge t;
+    for(int i = 0; i < n -1; i++){
+        small = i;
+        for(int j = i + 1; j < n; j++)
+            if(eg[j].w < eg[small].w)
+                small = j;
+        t = eg[i];
+        eg[i] = eg[small];
+        eg[small] = t;
+    }
+}
+
+void Kruskal(mGraph g){
+    int k, u1, v1, vs1, vs2;
+    int j;
+    itn *vexSet = (int*)malloc(sizeof(int)*g.n);
+    Edge *edgeSet = (Edge*)malloc(sizeof(Edge)*g.e);
+    k = 0;
+    for(int i = 0; i < g.n; i++)
+        for(j = 0; j < i; j++){
+            if(g.a[i][j] != 0 && g.a[i][j] != g.noEdge){
+                edgeSet[k].u = i;
+                edgeSet[k].v = j;
+                edgeSet[k].w = g.a[i][j];
+            }
+        }
+    SelectSort(edgeSet, g.e/2);
+    for(int i = 0; i < g.n; i++)
+        vexSet[i] = i;
+    k = 0;
+    j = 0;
+    while(k < g.n - 1){
+        u1 = edgeSet[j].u;
+        v1 = edgeSet[j].v;
+        vs1 = vexSet[u1];
+        vs2 = vexSet[v1];
+        if(vs1 != vs2){
+            printf("%d , %d, %d, \n", edgeSet[j].u, edgeSet[j].v, edgeSet[j].w); // 输出边
+            k++;
+            for(int i = 0; i < g.n; i++)
+                if(vexSet[i] == vs2)
+                    vexSet[i] = vs1;
+        }
+        j++;
+    }
+}
+```
 
 ### 单源最短路径
 
@@ -2466,7 +2561,94 @@ $$
 
 求任意两对顶点之间的最短路径，只需每次选择一个顶点为源点，重复执行迪杰斯特拉算法 $$n$$ 次，便可以求得任意两对顶点之间的最短路径，总执行时间为 $$O(n^3)$$
 
+迪杰斯特拉算法如下：
 
+```c
+int Choose(int *d, int *s, int n){
+    int minpos;                 //  选出最小的d[i]
+    ElemType min;
+    min = INFTY;
+    minpos = -1;
+    for(int i = 0; i < n; i++)
+        if(d[i] < min && !s[i]){
+            min = d[i];
+            minpos = i;
+        }
+    return minpos;
+}
+
+bool Dijkstra(int v, ElemType *d, int *path, mGraph g){
+    int k, w;
+    int *s;
+    if(v < 0 || v > g.n - 1)
+        return false;
+    s = (int*)malloc(sizeof(int)*g.n);
+    for(int i = 0; i < g.n; i++){
+        s[i] = 0;
+        d[i] = g.a[v][i];
+        if(i != v && d[i] < INFTY)
+            path[i] = v;
+        else
+            path[i] = -1;
+    }
+    s[v] = 1;
+    d[v] = 0;                           // 顶点v为源点
+    for(int i = 1; i < g.n - 1; i++)
+    {
+        k = Choose(d, s, g.n);
+        if(k == -1)
+            continue;
+        s[k] = 1;
+        printf("%d ", k);
+        for(w = 0; w < g.n; w++)
+            if(!s[w] && d[k] + g.a[k][w] < d[w]){
+                d[w] = d[k] + g.a[k][w];
+                path[w] = k;
+            }
+    }
+    for(int i = 0; i < g.n; i++)
+        printf("%d ", d[i]);
+    return true;
+}
+```
+
+还有一种全全部最短路径的算法是 **弗洛伊德算法**：
+
+```c
+void Floyd(mGraph g){
+    ElemType **d = (ElemType**)malloc(g.n*sizeof(ElemType*));
+    int **p = (int**)malloc(g.n*sizeof(int*));
+    for(int i = 0; i < g.n; i++){
+        d[i] = (ElemType*)malloc(g.n*sizeof(ElemType));
+        p[i] = (int*)malloc(g.n*sizeof(int));
+        for(int j = 0; j < g.n; j++){
+            d[i][j] = g.noEdge;
+            p[i][j] = 0;
+        }
+    }
+    for(int i = 0; i < g.n; i++)
+        for(int j = 0; j < g.n; j++){
+            d[i][j] = g.a[i][j];
+            if(i != j && g.a[i][j] < INFTY)
+                p[i][j] = i;
+            else
+                p[i][j] = -1;
+        }
+    for(int k = 0; k < g.n; k++)
+        for(int i = 0; i < g.n; i++)
+            for(int j = 0; j < g.n; j++)
+                if(d[i][k] + d[k][j] < d[i][j]){
+                    d[i][j] = d[i][k] + d[k][j];
+                    p[i][j] = p[k][j];
+                }
+    for(int i = 0; i < g.n; i++)
+    {
+        for(int j = 0; j < g.n; j++)
+            printf("%d ", d[i][j]);
+        printf("\n");
+    }
+}
+```
 
 
 
