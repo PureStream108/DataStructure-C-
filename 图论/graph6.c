@@ -2,9 +2,12 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<stdbool.h>
+#include<limits.h>
+#define INFTY INT_MAX
 typedef int ElemType;
 typedef struct eNode ENode;
 typedef struct lGraph LGraph;
+
 enum{
     Duplicate = -1,
     NoPresent = -2
@@ -25,7 +28,6 @@ struct lGraph{
 bool Init(LGraph *lg, int size);
 bool Exist(LGraph *lg, int u, int v);
 bool Insert(LGraph *lg, int u, int v, ElemType w);
-bool Remove(LGraph *lg, int u, int v);
 void Destroy(LGraph *lg);
 void PrintGraph(LGraph *lg);
 
@@ -33,7 +35,34 @@ void PrintGraph(LGraph *lg);
 bool Prim(int k, int *closeVex, ElemType *lowWeight, LGraph g);
 
 int main(){
+    LGraph g;
+    Init(&g, 4);
 
+    Insert(&g, 0, 1, 2);
+    Insert(&g, 0, 2, 1);
+    Insert(&g, 1, 3, 3);
+    Insert(&g, 2, 3, 5);
+    Insert(&g, 0, 3, 7);
+
+    PrintGraph(&g);
+    
+    int closeVex[4];
+    ElemType lowWeight[4];
+
+    printf("\n");
+    printf("普里姆算法：\n");
+    Prim(0, closeVex, lowWeight, g);
+    
+    ElemType totalWeight = 0;
+    for (int i = 0; i < g.n; i++) {
+        if (lowWeight[i] != INT_MAX) {
+            totalWeight += lowWeight[i];
+        }
+    }
+    printf("最小生成树总权值: %d\n", totalWeight);
+
+    Destroy(&g);
+    return 0;
 }
 
 bool Init(LGraph *lg, int size){
@@ -79,26 +108,6 @@ bool Insert(LGraph *lg, int u, int v, ElemType w){
     return true;
 }
 
-bool Remove(LGraph *lg, int u, int v){
-    ENode *p, *q;
-    if(u < 0 || v < 0 || u > lg -> n - 1 || v > lg -> n - 1 || u == v) // 判断界限
-        return false;
-    p = lg -> a[u], q = NULL;
-    while(p && p -> AdjVex != v){
-        q = p;                  // q是p的前驱节点
-        p = p -> NextArc;
-    }
-    if(!p)
-        return NoPresent;
-    if(q)
-        q -> NextArc = p -> NextArc;  // 将q的下一节点跳过p，指向p的下一个，从而达成删除效果
-    else
-        lg -> a[u] = p -> NextArc;
-    free(p);                          // 只有动态数组才需要被free
-    lg -> e--;
-    return true;
-}
-
 void Destroy(LGraph *lg){
     ENode *p, *q;
     for(int i = 0;i < lg -> n;i++){
@@ -129,6 +138,7 @@ void PrintGraph(LGraph *lg) {
 bool Prim(int k, int *closeVex, ElemType *lowWeight, LGraph g){
     ENode *p;
     ElemType min;
+    int j;
     int *isMask = (int*)malloc(sizeof(int)*g.n);
     if(k < 0 || k > g.n)
         return false;
@@ -139,18 +149,18 @@ bool Prim(int k, int *closeVex, ElemType *lowWeight, LGraph g){
         isMask[i] = 0;          // 标记顶点 i 是否已经在生成树上
     }
     lowWeight[k] = 0;
-    closeVex[k] = 0;
+    closeVex[k] = k;
     isMask[k] = 1;     // 以上三条说明源点加入生成树
     for(int i = 1; i < g.n; i++){
         for(p = g.a[k]; p; p = p -> NextArc){
             j = p -> AdjVex;
-            if((!isMask[j]) && ((lowWeight[j] > p -> w)){ // 更新树外顶点的lowWeight值
+            if((!isMask[j]) && (lowWeight[j] > p -> w)){ // 更新树外顶点的lowWeight值
                 lowWeight[j] = p -> w;                    // 初始都是0，第一遍约等于初始化
                 closeVex[j] = k;
             }
         }
         min = INFTY;
-        for(int j = 0; j < g.n; j++)    // 找生成树外顶点中，具有最小lowWeight值的顶点k
+        for(j = 0; j < g.n; j++)    // 找生成树外顶点中，具有最小lowWeight值的顶点k
         {
             if((!isMask[j]) && (lowWeight[j] < min)){
                 min = lowWeight[j];
@@ -167,3 +177,16 @@ bool Prim(int k, int *closeVex, ElemType *lowWeight, LGraph g){
     }
     return true;
 }
+
+// 图的邻接表:
+// 顶点 0: -> (3, 权重:7) -> (2, 权重:1) -> (1, 权重:2) 
+// 顶点 1: -> (3, 权重:3) 
+// 顶点 2: -> (3, 权重:5) 
+// 顶点 3: 
+
+// 普里姆算法：
+// 0     0     0   ← 顶点0是起点，自身连接，权值为0
+// 0     1     2   ← 顶点1通过边(0,1)连接，权值2
+// 0     2     1   ← 顶点2通过边(0,2)连接，权值1
+// 1     3     3   ← 顶点3通过边(1,3)连接，权值3
+// 最小生成树总权值: 6

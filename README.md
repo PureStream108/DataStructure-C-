@@ -3,11 +3,9 @@
 
 整理+补全代码：PureStream
 
-每个大章节中我会把文件程序具体是什么放在最前面，然后知识点放在程序后，所以可能顺序会有点不同，可以看
+如果有什么建议或者错误欢迎QQ私聊或者 `New Issue`
 
-下面目录选择你喜欢的进行查看（ **想看程序分别对应是什么的** 可以直接 **点大章节标题**，比如我直接点树就能看到
-
-对应程序的内容所指）（Github右边可以展开目录）
+每个大章节中我会把文件程序具体是什么放在最前面，然后知识点放在程序后，所以可能顺序会有点不同，可以看下面目录选择你喜欢的进行查看（ **想看程序分别对应是什么的** 可以直接 **点大章节标题**，比如我直接点树就能看到对应程序的内容所指）（Github右边可以展开目录）
 
 [TOC]
 
@@ -2272,7 +2270,7 @@ B:错误
 
 此时，只有3处数据进行了更新
 
-**从当前尚未入选生成树T的顶点1,3中，选出lowcost最小的顶点1;**
+**从当前尚未入选生成树T的顶点1,3中，选出lowcost最小的顶点1**
 
 ![](./image/dj8.png)
 
@@ -2300,6 +2298,7 @@ B:错误
 bool Prim(int k, int *closeVex, ElemType *lowWeight, LGraph g){
     ENode *p;
     ElemType min;
+    int j;
     int *isMask = (int*)malloc(sizeof(int)*g.n);
     if(k < 0 || k > g.n)
         return false;
@@ -2310,7 +2309,7 @@ bool Prim(int k, int *closeVex, ElemType *lowWeight, LGraph g){
         isMask[i] = 0;          // 标记顶点 i 是否已经在生成树上
     }
     lowWeight[k] = 0;
-    closeVex[k] = 0;
+    closeVex[k] = k;
     isMask[k] = 1;     // 以上三条说明源点加入生成树
     for(int i = 1; i < g.n; i++){
         for(p = g.a[k]; p; p = p -> NextArc){
@@ -2321,7 +2320,7 @@ bool Prim(int k, int *closeVex, ElemType *lowWeight, LGraph g){
             }
         }
         min = INFTY;
-        for(int j = 0; j < g.n; j++)    // 找生成树外顶点中，具有最小lowWeight值的顶点k
+        for(j = 0; j < g.n; j++)    // 找生成树外顶点中，具有最小lowWeight值的顶点k
         {
             if((!isMask[j]) && (lowWeight[j] < min)){
                 min = lowWeight[j];
@@ -2611,6 +2610,8 @@ bool Dijkstra(int v, ElemType *d, int *path, mGraph g){
     return true;
 }
 ```
+
+#### 弗洛伊德算法
 
 还有一种全全部最短路径的算法是 **弗洛伊德算法**：
 
