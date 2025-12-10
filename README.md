@@ -1444,7 +1444,7 @@ void Init(mGraph *mg, int size, intElemType noEdgeValue){
     mg -> n = size;             // 初始化顶点数
     mg -> e = 0;                // 初始化边数
     mg -> noEdge = noEdgeValue; // 初始化没有边时的值
-    mg -> a = (ElemType*)malloc(sizeof(ElemType)*size);
+    mg -> a = (ElemType*)malloc(sizeof(ElemType*)*size);
     for(int i = 0; i < mg -> n; i++){
         mg -> a[i] = (ElemType*)malloc(sizeof(ElemType)*size);
         for(int j = 0; j < mg -> n; j++){
@@ -2571,7 +2571,7 @@ $$
 迪杰斯特拉算法如下：
 
 ```c
-int Choose(int *d, int *s, int n){
+int Choose(int *d, bool *s, int n){
     int minpos;                 //  选出最小的d[i]
     ElemType min;
     min = INFTY;
@@ -2584,37 +2584,40 @@ int Choose(int *d, int *s, int n){
     return minpos;
 }
 
-bool Dijkstra(int v, ElemType *d, int *path, mGraph g){
-    int k, w;
-    int *s;
-    if(v < 0 || v > g.n - 1)
-        return false;
-    s = (int*)malloc(sizeof(int)*g.n);
-    for(int i = 0; i < g.n; i++){
-        s[i] = 0;
+bool Dijkstra(int v, ElemType *d, int *path, mGraph g) {
+    if (v < 0 || v >= g.n || !d || !path) return false;
+    
+    bool *s = (bool*)calloc(g.n, sizeof(bool));
+    if (!s) return false;
+
+    for (int i = 0; i < g.n; i++) {
+        s[i] = false;
         d[i] = g.a[v][i];
-        if(i != v && d[i] < INFTY)
+        if (i != v && d[i] < INFTY) {
             path[i] = v;
-        else
-            path[i] = -1;
+        } else {
+            path[i] = -1; // -1表示无前驱
+        }
     }
-    s[v] = 1;
-    d[v] = 0;                           // 顶点v为源点
-    for(int i = 1; i < g.n - 1; i++)
-    {
-        k = Choose(d, s, g.n);
-        if(k == -1)
-            continue;
-        s[k] = 1;
-        printf("%d ", k);
-        for(w = 0; w < g.n; w++)
-            if(!s[w] && d[k] + g.a[k][w] < d[w]){
+    
+    s[v] = true;
+    d[v] = 0;
+
+    for (int i = 1; i < g.n; i++) {
+        int k = Choose(d, s, g.n);
+        if (k == -1) break;
+        
+        s[k] = true;
+        
+        for (int w = 0; w < g.n; w++) {
+            if (!s[w] && g.a[k][w] < INFTY && d[k] + g.a[k][w] < d[w]) {
                 d[w] = d[k] + g.a[k][w];
-                path[w] = k;
+                path[w] = k; // 更新前驱节点
             }
+        }
     }
-    for(int i = 0; i < g.n; i++)
-        printf("%d ", d[i]);
+    
+    free(s);
     return true;
 }
 ```
@@ -2665,5 +2668,183 @@ void Floyd(mGraph g){
 
 ## 排序
 
-占位
+sort1.c（简单排序）
 
+sort2.c（直接插入排序）
+
+sort3.c（冒泡排序）
+
+### 概念
+
+**什么是排序**
+
+设有 $$n$$ 个数据元素的序列 ( $$D_0,D_1,...D_{n-1}$$ )， $$K_i$$ 是 $$D_i$$ 的关键字所谓排序，就是找元素下标( $$0,1,…,n-1$$ )的一种排列 $$p(0),p(1),…, p(n-1)$$ 使得序列按 $$K_{p(0)}()≥K_{p(1)}≧...≥K_{p(n-1)}$$ **(非递增)** 或 $$K_{p(0)}≤ K_{p(1)}≤...≤K_{p(n-1)}$$  **(非递减)** 的次序排列为：
+$$
+(D_{p(0)},D_{p(1)},.....D_{p(n-1)})
+$$
+**排序基本概念之稳定性**
+
+待排序序列中两个元素 $$D_i$$ 和 $$D_j$$ ， $$D_i$$ 排在 $$D_j$$ 之前，且 $$K_i=K_j$$ 排序后， $$D_i$$ 仍然排在 $$D_j$$ 之前，则称所用的排序算法是**稳定的**。反之，称该排序算法是不稳定的
+
+序列初始输入顺序：(Johnson,90)，(Jay,88)，(Alice,90)
+
+以成绩为关键字排序：(Jay,88)，(Alice,90)，(Johnson,90)
+
+从上面两个排序可以看到，原本John在Alice前面，但是排序后到后面去了，所以这个排序是不稳定的
+
+**一个需要具有稳定性排序算法的实例-稀疏矩阵转置**
+
+步骤1：依次访问 $$A$$ 的行三元组表中各个三元组 $$<i,j,a_{ij}>$$ ，交换元素行列号后依次
+保存到 $$B$$ 的行三元组表中
+
+步骤2：将 $$B$$ 的行三元组表中的行三元组按照行下标值从小到大重新排序
+
+![](./image/sort1.png)
+
+**排序基本概念之内外之分**
+
+如果待排序元素总数相对于内存而言较小，整个排序过程可以在**内存中进行**，则称之为**内部排序**，简称内排序
+
+反之，如果待排序元素总数较多，不能全部放入内存，排序过程中**需访问外存**，则称之为**外部排序**，简称外排序
+
+**排序算法中的数据存储**
+
+```c
+typedef struct entry Entry;
+typedef struct list List;
+
+struct entry{
+    KeyType key;   // 排序关键字，应为可比较类型
+    DataType data; // data包含数据元素中的其他数据项
+};
+
+struct list{
+    int n;              // 待排序元素数量
+    Entry D[MaxSize];   // 静态数组存储数据元素
+};
+```
+
+### 简单选择排序
+
+**算法思想**
+
+每一趟排序，找到待排序序列中**关键字最小**的数据元素，将其与待排序序列中**第一个数据元素交换位置**，并将其从下一趟待排序序列中移出重复该过程，直到某趟排序时待排序序列中仅剩下两个数据元素
+
+**算法过程**
+
+第 $$i$$ 趟排序：在待排序列 $$D[i-1],D[],…, D[n-1]$$ 上找到关键字最小的数据元素将其与 $$D[i-1]$$ 交换位置
+
+**此刻 $$D[i-1]$$ 存储的是全局关键字第 $$i$$ 小的元素，不再进入下趟排序范围**
+
+第 $$n-1$$ 趟排序，在待排序列 $$D[n-2],D[n-1]$$ 上找到关键字最小的数据元素，将其与 $$D[n-2]$$ 交换位置
+
+**此刻 $$D[n-2]$$ 存储的是全局关键字第二大的元素， $$D[n-1]$$ 存储的是全局关键字最大的元素**
+
+![](./image/sort2.png)
+
+可以发现，排序前后两个48的相对位置发生改变，所以**简单排序算法是不稳定的**
+
+**算法分析**
+
+该算法必须进行 $$n-1$$ 趟，每趟进行 $$n-i-1$$ 次比较，这样总的比较次数为：
+$$
+\sum_{i=1}^{n-1}(n-i)=\frac{n(n-1)}{2}
+$$
+时间复杂度按比较次数衡量为 $$O(n^2)$$ （最好、最坏、平均） 
+
+简单选择排序是**不稳定**的排序方法
+
+简单选择排序每趟都能确定至少一个元素的最终有序位置
+
+```c
+void Swap(Entry *D, int i, int j){
+    Entry temp;
+    if(i == j)
+        return;
+    temp = *(D + i);
+    *(D + i) = *(D + j);
+    *(D + j) = temp;
+}
+
+int FindMin(List *list, int startIndex){
+    int n = list -> n - startIndex;
+    int min = list -> D[startIndex];
+    int count = startIndex;
+    for(int i = startIndex; i < n; i++){
+        if(min > list -> D[i]){
+            min = list -> D[i];
+            count = i;
+        }
+    }
+    return count;
+}
+
+void SelectSort(List *list){
+    int minIndex, startIndex = 0;
+    while(startIndex < list -> n - 1){
+        minIndex = FindMin(*list, startIndex);
+        Swap(list -> D, startIndex, minIndex);
+        startIndex++;
+    }
+}
+```
+
+### 直接插入排序
+
+**算法思想**
+
+从只包含一个数据元素的有序序列开始，不断地将待排序数据元素**有序地插入**这个有序序列中，直到有序序列包含了所有待排序数据元素为止
+
+**算法过程**
+
+第1趟：将序列中第1个元素作为一个有序序列，将第2个元素按序插入到有序序列中
+
+**此刻前2个元素组成有序区，后n-2个元素组成无序区**
+
+第2趟:将序列中第1-2个元素作为一个有序序列，将第3个元素按序插入到有序序列中
+
+**此刻前3个元素组成有序区，后n-3个元素组成无序区**
+
+第i趟：将序列中第1~i个元素作为有序序列，将第i+1个元素按序插入到有序序列中
+
+**此刻前 i+1个元素组成有序区，后 n-i-1个元素组成无序区**
+
+第n-1趟：将序列中1~n-1个元素作为有序序列，将第n个元素按序插入到有序序列中
+
+**得到排好序的序列**
+
+![](./image/sort3.png)
+
+```c
+void InsertSort(List *list){
+    int i, j;           // i标识待插入元素下标
+    Entry insertItem;   // 每一趟待插入元素
+    for(i = 1; i < list -> n; i++){
+        insertItem = list -> D[i];
+        for(j = i - 1; j >= 0; j--){        
+            // 不断将有序序列中元素向后运动，为待插入元素空出位置
+            if(insertItem.key < list -> D[j].key)
+                list -> D[j + 1] = list -> D[j];
+            else
+                break;
+        }
+        list -> D[j + 1] = insertItem; // 待插入元素有序存放至有序序列中
+    }
+}
+```
+
+**为什么最后是D[j+1]？**
+
+因为循环结束后进行了 `j--` 操作
+
+**算法分析**
+
+算法总要执行 $$n-1$$ 趟
+
+第 $$i$$ 趟的最坏情况：待插入元素 $$D[i+1]$$ 插入到有序区 $$(D[0],D[1],….,D[i])$$ 中 $$D[0]$$ 之前，元素比较 $$i$$ 次
+
+最坏情况（逆序）：每一趟待插入元素都插入到有序区的最前面
+
+在最坏情况下比较次数： $$\sum_{i=1}^{n-1}i=\frac{n(n-1)}{2}$$
+
+在最坏情况下时间复杂度: $$O(n^2)$$

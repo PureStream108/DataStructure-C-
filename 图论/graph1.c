@@ -1,3 +1,4 @@
+//邻接矩阵
 #include<stdio.h>
 #include<stdlib.h>
 #include<stdbool.h>
@@ -68,7 +69,7 @@ void Init(mGraph *mg, int size, ElemType noEdgeValue){
     mg -> n = size;             // 初始化顶点数
     mg -> e = 0;                // 初始化边数
     mg -> noEdge = noEdgeValue; // 初始化没有边时的值
-    mg -> a = (ElemType**)malloc(sizeof(ElemType)*size);
+    mg -> a = (ElemType**)malloc(sizeof(ElemType*)*size);
     for(int i = 0; i < mg -> n; i++){
         mg -> a[i] = (ElemType*)malloc(sizeof(ElemType)*size);
         for(int j = 0; j < mg -> n; j++){
