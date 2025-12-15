@@ -126,7 +126,8 @@ void AdjustDown(ElemType heap[], int current, int border){
             temp = heap[p];
             heap[p] = heap[minChild];
             heap[minChild] = temp;
-            p = minChild;          // 设置下轮循环待考察元素的位置（当前下移元素位置）
+            p = minChild;          
+            // 设置下轮循环待考察元素的位置（当前下移元素位置）
         }
     }
 }
@@ -2767,22 +2768,18 @@ void Swap(Entry *D, int i, int j){
 }
 
 int FindMin(List *list, int startIndex){
-    int n = list -> n - startIndex;
-    int min = list -> D[startIndex];
-    int count = startIndex;
-    for(int i = startIndex; i < n; i++){
-        if(min > list -> D[i]){
-            min = list -> D[i];
-            count = i;
-        }
+    int minIndex = startIndex;
+    for(int i = startIndex + 1; i < list -> n; i++){
+        if(list -> D[i].key < list -> D[minIndex].key)
+            minIndex = i;
     }
-    return count;
+    return minIndex;
 }
 
 void SelectSort(List *list){
     int minIndex, startIndex = 0;
     while(startIndex < list -> n - 1){
-        minIndex = FindMin(*list, startIndex);
+        minIndex = FindMin(list, startIndex);
         Swap(list -> D, startIndex, minIndex);
         startIndex++;
     }
@@ -2848,3 +2845,327 @@ void InsertSort(List *list){
 在最坏情况下比较次数： $$\sum_{i=1}^{n-1}i=\frac{n(n-1)}{2}$$
 
 在最坏情况下时间复杂度: $$O(n^2)$$
+
+### 冒泡排序
+
+跟C语言一样，不作解释
+
+![](./image/sort4.png)
+
+![](./image/sort5.png)
+
+依此类推....不断把最大的排在最后
+
+**算法分析-最好与最坏情况**
+
+最好情况：已有序情况下只需进行一趟排序， $$n-1$$ 次比较最好情况下的时间复杂度是 $$O(n)$$
+
+最坏情况：进行 $$n-1$$ 趟，第 $$i$$ 趟比较 $$(n-i)$$ 次，比较次数为： $$\sum_{i=1}^{n-1}n-1=\frac{n(n-1)}{2}$$
+
+因此最坏情况下的时间复杂度是 $$O(n^2)$$
+
+平均情况：算法在每趟排序停止概率相同，为 $$\frac{1}{(n-1)}$$ ，比较次数为 :
+$$
+\frac{1}{(n-1)} \times \sum_{j=1}^{n-1}\sum_{i=1}^{j}(n-i)=\frac{n(2n-1)}{6}
+$$
+因此平均情况下的时间复杂度是 $$O(n^2)$$
+
+```c
+void Swap(Entry *D, int i, int j){
+    Entry temp;
+    if(i == j)
+        return;
+    temp = *(D + i);
+    *(D + i) = *(D + j);
+    *(D + j) = temp;
+}
+
+void BubbleSort(List *list){
+    int i, j;
+    for(i = list -> n - 1; i > 0; i--){
+        bool isSwap = false;
+        for(j = 0; j < i; j++){
+            if(list -> D[j].key > list -> D[j + 1].key){
+                Swap(list -> D, j, j + 1);
+                isSwap = true;
+            }
+        }
+        if(!isSwap)
+            break;
+    }
+}
+```
+
+### 快速排序
+
+**算法的递归思想**
+
+**快速排序**(待排序序列)：
+
+1.待排序序列中元素数量小于等于1时，无须排序，直接退出
+
+2.选择**分割元素** $$D_s$$ (关键字为 $$K_s$$ )，将序列划分成左右子序列，满足：
+
+- 左子序列中所有元素的关键字均不大于 $$K$$
+- 右子序列中所有元素的关键字均不小于 $$K$$
+
+3.快速排序 (左子序列)：(**48**，36，68，72，12，<u>48</u> ，02)
+
+4.快速排序 (右子序列)：(12，36，02，48) **48** (72，68)
+
+![](./image/sort6.png)
+
+1.**low** 指向待排序列的**最左元素**，**high**指向待排序序列的**最右元素**
+
+2.选择**待排序列**中第一个元素**D[low]**为分割元素
+
+3.游动标识 $$i$$ 和 $$j$$ ，初始时 $$i=low$$ ， $$j=high+1$$
+
+![](./image/sort7.png)
+
+- $$i=i+1$$ ，**从左向右** 扫描序列，找到第一个 $$≥$$ 分割元素的元素后停止
+- $$j=j-1$$ ，**从右向左 **扫描序列，找到第一个 $$≤$$ 分割元素的元素后停止
+- 如果 $$i<j$$ ，将 $$D[i]$$ 与 $$D[j]$$ 交换，继续步骤1和2
+- 如果 $$i≥j$$ ，将 $$D[low]$$ 与 $$D[j]$$ 交换，本趟快速排序结束
+
+![](./image/sort8.png)
+
+![](./image/sort9.png)
+
+因为此时 $$i<j$$ ，所以本趟排序并没有停止，继续搜索
+
+![](./image/sort10.png)
+
+![](./image/sort11.png)
+
+此时发现 $$i>j$$ ， 则交换 $$low$$ 和 $$j$$  ，本趟排序结束
+
+![](./image/sort12.png)
+
+![](./image/sort13.png)
+
+很显然48在排序前后相对位置不一样，所以快速排序算法是不稳定的
+
+**过程分析**：
+
+![](./image/sort14.png)
+
+![](./image/sort15.png)
+
+![](./image/sort16.png)
+
+![](./image/sort17.png)
+
+**快速排序算法**：
+
+```c
+int Partition(List *list, int low, int high){
+    int i = low - 1;
+    int j = high + 1;
+    Entry pivot = list -> D[low]; // pivot是分割元素
+    do{
+        do{
+            i++;
+        }while (i <= high && list->D[i].key < pivot.key); 
+        // i前进，直到遇到大于分割
+        do{
+            j --;
+        }while (j >= low && list->D[j].key > pivot.key);  
+        // j前进，直到遇到小于分割
+        if(i < j)
+            Swap(list -> D, i, j);
+    }while(i < j);
+    Swap(list -> D, low, j);
+    return j;   // 此时j是分割元素的下标
+}
+
+void QuickSort(List *list, int low, int high){
+    if(low < high){
+        int p = Partition(list, low, high);
+        QuickSort(list, low, p);
+        QuickSort(list, p + 1, high);
+    }
+}
+```
+
+**算法分析**：
+
+**最好情况**：经过每一趟排序后，若分割成的两个子序列长度相近快速排序的效率最好，时间复杂度为 $$O(nlog_2n)$$
+
+**平均情况**：时间复杂度为 $$O(nlog_2n)$$
+
+**最坏情况**：若每次分割的两个子序列中有一个为空，即每一趟仅生成一个子序列且长度仅比当前序列少1，则效率最低，时间复杂度为 $$O(n^2)$$
+
+**各趟排序结果**：最多 $$n-1$$趟
+
+$$Q(n)=Q(\lfloor \frac{n-1}{2} \rfloor)+Q(\lceil \frac{n-1}{2} \rceil) + 1$$
+
+### 合并排序
+
+**算法思想**
+
+- 初始时将待排序的 $$n$$ 个数据元素看作 $$n$$ 个待合并有序序列，每个序列中只包含一个数据元素
+- 将每 $$m$$ 个待合并序列合并成一个大的有序序列
+- **在最后一次合并中，序列个数可能少于 $$m$$**
+- 重复合并过程，直到所有数据元素都属于同一个有序序列为止
+- 当 $$m=2$$ 时，上述合并排序过程称为**两路合并排序算法**
+
+**算法过程**：
+
+第1趟排序：对 $$n$$ 个有序序列 $$(D[0]),(D[1]),…,(D[n-1])$$ 
+
+合并 $$(D[0])和 (D[1])$$ ，得到有序序列 $$(D[0],D[1])$$
+
+合并 $$(D[2])$$ 和 $$(D[3])$$ ，得到有序序列 $$(D[2],D[3])$$
+
+如果 $$n$$ 是偶数，合并最后两个有序序列，否则，最后一个序列不发生合并
+
+第2趟排序：对 $$\lceil \frac{n}{2} \rceil$$ 个有序序列 $$(D[0],D[1]),(D[2],D[3])$$
+
+合并 $$(D[0], D[1])$$ 和 $$(D[2], D[3])$$ ，得到有序序列 $$(D[0],D[1],D[2],D[3])$$
+
+合并 $$(D[4], D[5])$$ 和 $$(D[6],D[7])$$ ，得到有序序列 $$(D[4],D[5],D[6],D[7])$$
+
+如果 $$\lceil \frac{n}{2} \rceil$$ 是偶数，合并最后两个有序序列，否则，最后一个序列不发生合并
+
+依此类推.....
+
+第 $$N$$ 趟排序： 当 $$\lceil \frac{n}{2^{N-1}} \rceil=2$$ 时，只剩下最后两个有序序列，直接合并即可
+
+![](./image/sort18.png)
+
+![](./image/sort19.png)
+
+如果两个元素关键字相同，则优先放入 $$D[i]$$ ，所以**两路合并算法是稳定的**
+
+```c
+// list是待排序序列，temp是临时创建的空间的首地址，n1和n2是子序列长度，low是子序列首地址
+void Merge(List *list, Entry *temp, int low, int n1, int n2){
+    int i = low;
+    int j = low + n1; // i，j初始分别指向两个序列的第一个元素
+    while(i <= low + n1 - 1 && j <= low + n1 + n2 - 1){
+        if(list -> D[i].key <= list -> D[j].key)
+            *temp++ = list -> D[i++];
+        else
+            *temp++ = list -> D[j++];
+    }
+    while(i <= low + n1 - 1)
+        *temp++ = list -> D[i++];   // 剩余元素直接拷贝至temp
+    while(j <= low + n1 + n2 - 1)
+        *temp++ = list -> D[j++];   // 剩余元素直接拷贝至temp
+}
+
+void MergeSort(List *list){
+    Entry temp[MaxSize];
+    int low, n1, n2, i, size = 1;
+    while(size < list -> n){
+        low = 0;                                    
+        // low是一对待合并序列中第一个序列的第一个元素的下标
+        while(low + size < list -> n){
+            n1 = size;
+            if(low + size * 2 < list -> n)
+                n2 = size;                          //计算第二个序列长度
+            else
+                n2 = list -> n - low - size;
+            Merge(list, temp + low, low, n1, n2);
+            low += n1 + n2;                         
+            // 确定下一对待合并序列中第一个序列的第一个元素下标
+        }
+        for(i = 0; i < low; i++)
+            list -> D[i] = temp[i];                 // 复制一趟合并排序结果
+        size *= 2;                                  // 子序列长度翻倍
+    }
+}
+```
+
+**算法分析**：
+
+每趟都要扫描 $$n$$ 个元素，因此两路合并排序的时间复杂度 $$O(nlog_2n)$$ 
+
+但是它必须借助一个与原序列等大小的辅助数组 $$(O(n))$$ 方能实现
+
+**两路合并排序是一种稳定的排序方法**
+
+### 堆排序
+
+（最大堆，且是完全二叉树，所以到时候做题可以先画一个完全二叉树，然后存放顺序就是层次遍历的顺序）
+
+**算法思想**
+
+- 借助堆数据结构，不断输出当前堆顶元素
+- 每次堆顶离开当前堆后，对剩余元素重新调整成堆，直到堆中只剩下一个元素
+- 元素的输出序列可转换成元素的有序序列
+
+**算法过程**
+
+准备：待排序序列构建成**最大堆** $$D[0],D[1],……, D[n-1]$$
+
+第 $$1$$ 趟：交换堆顶元素 $$D[0]$$ 与堆底元素 $$D[n-1]$$调整 $$D[0],D[1],…, D[n-2]$$ 为最大堆
+
+第 $$2$$ 趟：交换堆顶元素 $$D[0]$$与堆底元素 $$D[n-2]$$ 调整 $$D[0],D[1],…., D[n-3]$$ 为最大堆
+
+...
+
+第 $$i$$ 趟：交换堆顶元素 $$D[0]$$ 与堆底元素 $$D[n-i]$$ 调整 $$D[0],D[1],.., D[n-i-1]$$ 为最大堆
+
+...
+
+第 $$n-1$$ 趟：交换堆顶元素 $$D[0]$$ 与堆底元素 $$D[1]$$ 排序完成
+
+**示例**：
+
+![](./image/sort20.png)
+
+![](./image/sort21.png)
+
+![](./image/sort22.png)
+
+**算法分析**
+
+- 堆排序主要有两步,即 **构造初始堆** 和 **排序**
+- 构造初始最大堆的时间复杂度 $$O(n)$$
+- AdjustDown() 函数的执行时间不超过 $$O(log_2n)$$
+- 在排序部分,除最后一趟的堆顶元素无需再调整外,其余 $$n-1$$ 个元素均要向下调整一次,花费时间 $$O(log_2n)$$ ,故堆排序的时间复杂度为 $$O(nlog_2n)$$
+- 最好、最坏与平均情况： $$O(nlog_2n)$$
+- 一趟堆排序结束后,可以确定一个元素的最终位置
+- 该排序是**不稳定**的排序方法
+
+```c
+// 修正后的 AdjustDown 函数（关键修改）
+void AdjustDown(Entry heap[], int current, int border) {
+    int parent = current;
+    Entry temp = heap[parent]; // 保存当前节点（整个结构体）
+    
+    while (2 * parent + 1 <= border) { // 存在左子节点
+        int child = 2 * parent + 1; // 默认左子节点
+        
+        // 选择较大的子节点（大顶堆）
+        if (child + 1 <= border && heap[child].key < heap[child + 1].key) {
+            child++; // 选择右子节点
+        }
+        
+        // 如果父节点大于等于子节点，满足堆性质
+        if (temp.key >= heap[child].key) {
+            break;
+        }
+        
+        // 将较大子节点上移（移动整个结构体）
+        heap[parent] = heap[child];
+        parent = child; // 继续向下检查
+    }
+    
+    // 将保存的节点放到正确位置
+    heap[parent] = temp;
+}
+
+void HeapSort(MaxHeap *hp) {
+    for (int i = (hp -> n - 2) / 2; i >= 0; i--) {
+        AdjustDown(hp -> D, i, hp -> n - 1);
+    }
+    for (int i = hp -> n - 1; i > 0; i--) {
+        Swap(hp -> D, 0, i);
+        AdjustDown(hp ->D, 0, i - 1);
+    }
+}
+```
+

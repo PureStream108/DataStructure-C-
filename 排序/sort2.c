@@ -2,6 +2,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<stdbool.h>
+#define MaxSize 100
 
 typedef struct entry Entry;
 typedef struct list List;
@@ -21,7 +22,30 @@ struct list{
 void InsertSort(List *list);
 
 int main(){
+    List list;
+    int testArray[] = {7, 34, 114, 5, 14, 19};
+    list.n = sizeof(testArray) / sizeof(testArray[0]);
 
+    for(int i = 0; i < list.n; i++){
+        list.D[i].key = testArray[i];
+        list.D[i].data = testArray[i];
+    }
+    
+    printf("排序前: ");
+    for (int i = 0; i < list.n; i++) {
+        printf("%d ", list.D[i].key);
+    }
+    printf("\n");
+    
+    InsertSort(&list);
+    
+    printf("排序后: ");
+    for (int i = 0; i < list.n; i++) {
+        printf("%d ", list.D[i].key);
+    }
+    printf("\n");
+    
+    return 0;
 }
 
 void InsertSort(List *list){

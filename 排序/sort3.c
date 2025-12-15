@@ -1,3 +1,5 @@
+// 冒泡排序
+// 每一趟都把最大的排在最后
 #include<stdio.h>
 #include<stdlib.h>
 #include<stdbool.h>
@@ -19,15 +21,14 @@ struct list{
 };
 
 void Swap(Entry *D, int i, int j);
-int FindMin(List *list, int startIndex);
-void SelectSort(List *list);
+void BubbleSort(List *list);
 
-int main() {
+int main(){
     List list;
-    int testArray[] = {5, 2, 9, 1, 5, 6};
+    int testArray[] = {7, 34, 114, 5, 14, 19};
     list.n = sizeof(testArray) / sizeof(testArray[0]);
-    
-    for (int i = 0; i < list.n; i++) {
+
+    for(int i = 0; i < list.n; i++){
         list.D[i].key = testArray[i];
         list.D[i].data = testArray[i];
     }
@@ -38,7 +39,7 @@ int main() {
     }
     printf("\n");
     
-    SelectSort(&list);
+    BubbleSort(&list);
     
     printf("排序后: ");
     for (int i = 0; i < list.n; i++) {
@@ -58,20 +59,17 @@ void Swap(Entry *D, int i, int j){
     *(D + j) = temp;
 }
 
-int FindMin(List *list, int startIndex){
-    int minIndex = startIndex;
-    for(int i = startIndex + 1; i < list -> n; i++){
-        if(list -> D[i].key < list -> D[minIndex].key)
-            minIndex = i;
-    }
-    return minIndex;
-}
-
-void SelectSort(List *list){
-    int minIndex, startIndex = 0;
-    while(startIndex < list -> n - 1){
-        minIndex = FindMin(list, startIndex);
-        Swap(list -> D, startIndex, minIndex);
-        startIndex++;
+void BubbleSort(List *list){
+    int i, j;
+    for(i = list -> n - 1; i > 0; i--){
+        bool isSwap = false;
+        for(j = 0; j < i; j++){
+            if(list -> D[j].key > list -> D[j + 1].key){
+                Swap(list -> D, j, j + 1);
+                isSwap = true;
+            }
+        }
+        if(!isSwap)
+            break;
     }
 }

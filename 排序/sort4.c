@@ -1,3 +1,4 @@
+//快速排序
 #include<stdio.h>
 #include<stdlib.h>
 #include<stdbool.h>
@@ -19,14 +20,14 @@ struct list{
 };
 
 void Swap(Entry *D, int i, int j);
-int FindMin(List *list, int startIndex);
-void SelectSort(List *list);
+int Partition(List *list, int low, int high);
+void QuickSort(List *list, int low, int high);
 
 int main() {
     List list;
-    int testArray[] = {5, 2, 9, 1, 5, 6};
+    int testArray[] = {5, 1, 1, 4, 9180, 191, 141};
     list.n = sizeof(testArray) / sizeof(testArray[0]);
-    
+
     for (int i = 0; i < list.n; i++) {
         list.D[i].key = testArray[i];
         list.D[i].data = testArray[i];
@@ -38,7 +39,7 @@ int main() {
     }
     printf("\n");
     
-    SelectSort(&list);
+    QuickSort(&list, 0, list.n - 1);
     
     printf("排序后: ");
     for (int i = 0; i < list.n; i++) {
@@ -58,20 +59,28 @@ void Swap(Entry *D, int i, int j){
     *(D + j) = temp;
 }
 
-int FindMin(List *list, int startIndex){
-    int minIndex = startIndex;
-    for(int i = startIndex + 1; i < list -> n; i++){
-        if(list -> D[i].key < list -> D[minIndex].key)
-            minIndex = i;
-    }
-    return minIndex;
+int Partition(List *list, int low, int high){
+    int i = low - 1;
+    int j = high + 1;
+    Entry pivot = list -> D[low]; // pivot是分割元素
+    do{
+        do{
+            i++;
+        }while (i <= high && list->D[i].key < pivot.key); // i前进，直到遇到大于分割
+        do{
+            j --;
+        }while (j >= low && list->D[j].key > pivot.key);  // j前进，直到遇到小于分割
+        if(i < j)
+            Swap(list -> D, i, j);
+    }while(i < j);
+    Swap(list -> D, low, j);
+    return j;   // 此时j是分割元素的下标
 }
 
-void SelectSort(List *list){
-    int minIndex, startIndex = 0;
-    while(startIndex < list -> n - 1){
-        minIndex = FindMin(list, startIndex);
-        Swap(list -> D, startIndex, minIndex);
-        startIndex++;
+void QuickSort(List *list, int low, int high){
+    if(low < high){
+        int p = Partition(list, low, high);
+        QuickSort(list, low, p);
+        QuickSort(list, p + 1, high);
     }
 }
