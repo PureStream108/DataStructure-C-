@@ -9,6 +9,282 @@
 
 [TOC]
 
+## 线性表
+
+![](./image/t1.png)
+
+线性结构体现的是**数据之间一对一的关系**
+
+### 线性表的定义
+
+线性表是零个或多个数据元素构成的线性序列，记为 $$(a_0，a_1，…，a_{n-1})$$ 
+
+线性表中的数据元素个数 $$n$$ 称为线性表的长度
+
+当 $$n=0$$ 时，此线性表为空表
+
+**线性表的运算**
+
+`Init(L)`：初始化运算。构造一个空的线性表L，若初始化成功，则返回OK，否则返回ERRO
+
+`Destroy(L)`：撤销运算。判断线性表L是否存在，若已存在，则撤销线性表L;否则返回ERROR
+
+`IsEmpty(L)`：判空运算。判断线性表L是否为空，若为空，则返回OK;否则返回ERROR
+
+`Length(L)`：求长度运算。若线性表L已存在，返回线性表L的元素个数;否则返回ERROR
+
+`Find(L,i)`：查找运算。若线性表L已存在且0≤i≤n-1，则查找线性表L中元素a;的值，查找成功返回OK;否则，返回ERROR
+
+`Insert(L,i,x)`：插入运算。若线性表L已存在且-1≤i<n-1，则在元素a;之后插入新元素x，插入成功后返回OK，否则返回ERROR
+
+`Delete(L,i)`：删除运算。若线性表L非空且0≤i<n-1，则删除元素a;，删除成功后返回OK，否则返回ERROR
+
+`Update(L,i,x)`：更新运算。若线性表L已存在且0≤i≤n-1，则将线性表L元素a;的值修改为x，否则返回ERROR
+
+`Output(L)`：输出运算。若线性表L已存在，则输出线性表L中所有数据元素，否则返回ERROR
+
+### 线性表的顺序存储
+
+![](./image/t2.png)
+
+**这里线性表的一对一关系是通过物理位置上的相邻来体现的**
+
+设线性表中第一个元素 $$a_0$$ 在内存中的存储地址是 $$loc(a_0)$$ 每个元素占用 $$k$$ 个存储单元，则线性表中任意元素 $$a_i$$ 在内存的存储地址为： $$loc(a_i)=loc(a_0)+i*k$$
+
+![](./image/t3.png)
+
+线性表的顺序表示定义如下：
+
+```c
+typedef struct seqlist{
+	int n;
+    int maxlength;
+    ElemType *element;
+} SeqList;
+
+//ElemType 是自定义类型,在实际使用时，用户可以根据实际需要将ElemType具体定义为所需的数据类型，可以是int、float等基本数据类型
+```
+
+**顺序表的插入**
+
+![](./image/t4.png)
+
+代码如下：
+
+```c
+Status Insert(SeqList *L, int i, ElemType x){
+    int j;
+    if(i < -1 || i > L -> n - 1)	// 判断下标是否越界
+        return ERROR;
+    if(L -> n == L -> maxlength)	// 判断顺序表是否已满
+        return ERROR;
+    for(j = L -> n - 1; i > i; j--)
+        L -> element[j + 1] = L -> element[j];
+    L -> element[i + 1] = x;
+    L -> n = L -> n + 1;
+    return OK;
+}
+```
+
+**顺序表的删除**
+
+![](./image/t5.png)
+
+代码如下：
+
+```c
+Status Delete(SeqList *L, int i){
+    if(i < 0 || i > L -> n - 1)
+       	return ERROR;
+    if(!L -> n)
+        return ERROE;	//顺序表为空则删除失败
+    for(j = i + 1; j < L -> n; j++)
+        L -> element[j - 1] = L -> element[j];
+    L -> n--;
+    return OK;
+}
+```
+
+### 线性表的链接存储
+
+#### 单链表
+
+**线性表的顺序存储结构的优缺点：**
+
+(1)优点：
+
+- 随机存取
+- 存储空间利用率高
+
+(2)缺点：
+
+- 插入、删除效率低;
+- 必须按事先估计的最大元素个数分配连续的存储空间，难以临时扩大
+
+采用链式存储结构的线性表称为**链表**
+
+链表有单链表、循环链表和双向链表等多种类型
+
+链表中，不仅需要存储每个数据元素，还需存储其直接后继的存储地址，这两部分数据信息组合起来称为结点
+
+结点包括两类域：存储数据元素信息的域称为**数据域**；存储直接后继存储地址的域称为**指针域**
+
+每个结点只包含一个指针域的链表，称为**单链表**
+
+下面是单链表的结点结构
+
+| element（数据） | link（地址） |
+| --------------- | ------------ |
+
+![](./image/lb1.png)
+
+最后一个结点的指针域为NULL，在图中记为 ^ 
+
+first是头指针，指向链表中的第一个结点，链表中的第一个结点称为**头结点**
+
+![](./image/lb2.png)
+
+注意：不能出现“断链”现象
+
+```c
+typedef struct node{
+    ElementType element;
+    struct node *link;
+}Node;
+
+typedef struct singleList{
+    struct node *first;
+    int n;
+}SingleList;
+```
+
+#### 单链表的插入
+
+![](./image/lb3.png)
+
+![](./image/lb4.png)
+
+```c
+bool Insert(SingleList *L, int i, ElementType x){
+    Node *p, *q;
+    itn j;
+    if(i < -1 || i > L -> n - 1)
+        return false;
+    p = L -> first;
+    for(j = 0; j < i; j++)
+        p = p -> link;
+    q = malloc(sizeof(Node));
+    q -> element = x;
+    if(i -> -1){                // 插在链表中间
+        p -> link = q -> link;
+        p -> link = q;    
+    }else{                      // 插在链表头结点之前
+        q -> link = L -> first;
+        L -> first = q;
+    }
+    L -> n++;
+    return true;
+}
+```
+
+#### 单链表的删除
+
+删除算法步骤为：
+
+①从first开始查找 $$a_i$$ 所在结点， $$p$$ 指向该结点， $$q$$ 指向该结点之前驱结点
+
+②从单链表中删除元素 $$a_i$$ 所在结点，若 $$i==0$$ ，则表示删除头结点；若 $$i>0$$ ,则表示删除的结点在单链表的中间位置:
+
+③释放元素 $$a_i$$ 所在结点的空间
+
+④表长减 $$1$$
+
+![](./image/lb55.png)
+
+![](./image/lb66.png)
+
+```c
+bool Delete(SingleList *L, int ){
+    Node *p, *q;
+    if(!L -> n)
+        return false;
+    if(i < 0 || i > L -> n - 1)
+        return false;
+    q = L -> first;
+    p = L -> first;
+    for(int j = 0; j < i; j++)
+        q = q -> link;
+    if(i == 0)
+        L -> first = L -> first -> link; // 删除头结点
+    else{
+        p = q -> link;			// p变成待删除结点
+        q -> link = p -> link;
+    }
+    free(p);
+    L->n--;
+    return true;
+}
+```
+
+#### 循环链表和双向链表
+
+![](./image/lb7.png)
+
+![](./image/lb8.png)
+
+**双向链表**
+
+| llink | element | rlink |
+| ----- | ------- | ----- |
+
+![](./image/lb9.png)
+
+结构定义：
+
+```
+typedef struct duNode{
+    ElementType element;
+    struct duNode *llink;
+    struct duNode *rlink;
+}DuNode, DuList;
+```
+
+**插入运算**
+
+![](./image/lb10.png)
+
+**删除运算**
+
+![](./image/lb11.png)
+
+### 线性表的应用
+
+线性表是一种最简单、最基本，最常用的数据结构，其用途十分广泛。作为线性表应用的一个例子，下面讨论一元整系数多项式的算术运算。从该例中，要学会如何分析元素间的关系、结构的描述、存储方式的选择，如何描述和实现算法
+
+![](./image/lb12.png)
+
+相应结构体定义如下：
+
+```c
+typedef struct pNode{
+    int coef;
+    int exp;
+    struct pNode *link;
+}PNode;
+
+typedef struct polunominal{
+    struct pNode *head;
+}Ploynominal;
+```
+
+## 堆栈与队列
+
+1
+
+## 数组
+
+1
+
 ## 树
 
 binarytree.c（先序、中序、后序遍历）
@@ -3172,5 +3448,4 @@ void HeapSort(MaxHeap *hp) {
     }
 }
 ```
-
 
