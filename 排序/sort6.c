@@ -57,7 +57,6 @@ void Swap(Entry *D, int i, int j) {
     D[j] = temp;
 }
 
-// 修正后的 AdjustDown 函数（关键修改）
 void AdjustDown(Entry heap[], int current, int border) {
     int parent = current;
     Entry temp = heap[parent]; // 保存当前节点（整个结构体）

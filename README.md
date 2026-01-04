@@ -11,6 +11,8 @@
 
 ## 线性表
 
+link1.c（单链表的删除/插入）
+
 ![](./image/t1.png)
 
 线性结构体现的是**数据之间一对一的关系**
@@ -279,7 +281,483 @@ typedef struct polunominal{
 
 ## 堆栈与队列
 
-1
+stack1.c（堆栈的顺序表示）
+
+queue1.c（队列的顺序表示）
+
+### 堆栈
+
+堆栈(Stack)是限定数据元素的插入和删除操作都在同一端进行的线性结构。
+
+后进先出： $$S=(a_0,a_1,...,a_{n-1})$$
+
+![](./image/z1.png)
+
+![](./image/z2.png)
+
+**ADT Stack** {
+
+数据：
+
+n个元素的线性序列 $$(a_0,a_1,.……,a_{n-1})$$ ，其中线性序列的长度上限为maxSize，且  $$0≤n<maxSize$$
+
+运算：
+
+**Create(S, maxSize)**：建立一个最多能存储maxSize个元素的空堆栈
+
+**Destroy(S)**：销毁堆栈，释放堆栈所占的存储空间
+
+**lsEmpty(S)**：若堆栈为空，则返回TRUE; 否则返回FALSE
+
+**IsFull(S)**：若堆栈已满，则返回TRUE; 否则返回FALSE
+
+**Top(S,x)**：获取堆栈的栈顶元素，并通过x返回。若操作成功，则返回TRUE; 否则返回FALSE
+
+**Push(S,x)**：在栈顶位置插入元素x(入栈操作)。若操作成功，则返回TRUE; 否则返回FALSE
+
+**Pop(S)**：从堆栈中删除栈顶元素(出栈操作)。若操作成功，则返回TRUE；否则返回FALSE.Clear(S):清除堆栈中全部元素
+
+}
+
+![](./image/z3.png)
+
+**例题**
+
+**若输入序列为1,2,3,4,5,6，则通过一个栈可以输出序列1,5,4,6,2,3**
+
+参考答案：错误
+
+解析：输入序列是123456的话，那么大的一定是比小的在前，所以末尾23错误
+
+**若元素输入序列为1,2,3,4,5,6，则通过一个栈可以得到输出序列3,2,5,6,4,1**
+
+参考答案：正确
+
+解析：先放123，然后弹出32，再放45，弹5，放6，弹4，弹1
+
+#### 堆栈的顺序表示
+
+结构体：
+
+```c
+typedef struct stack{
+    int top;                // 表示栈顶位置下标
+    int maxSize;            // 表示堆栈最大容量
+    ElementType *element;   // 堆栈数组首地址
+}Stack;
+```
+
+**创建一个能容纳mSize个单元的空堆栈**：
+
+```c
+void Create(Stack *S, int mSize){
+    S -> maxSize = mSize;
+    S -> element = (ElementType*)malloc(sizeof(ElementType)*mSize);
+    S -> top = -1;
+}
+```
+
+**销毁一个已存在的堆栈，释放堆栈占用的空间**：
+
+```c
+void Destroy(Stack *S){
+    S -> maxSize = -1;
+    free(S -> element);
+    S -> top = -1;
+}
+```
+
+**清除堆栈中全部元素，但并不释放空间**：
+
+```c
+void Clear(Stack *S){
+    S -> top = -1;
+}
+```
+
+`top = -1` 的意思是：**用 `top` 表示栈顶下标**，而 `-1` 作为一个“哨兵值”表示 **栈当前是空的**
+
+因为数组下标从 `0` 开始：
+
+- 当栈为空时，没有任何有效元素位置可指，所以设为 `-1`（不可能是合法下标）
+- 第一次入栈（push）时，一般会先 `top++`，于是 `top` 变成 `0`，新元素放在 `element[0]`
+- 每次再入栈一次，`top` 再加 1；出栈（pop）则取 `element[top]`，再 `top--`
+
+**判断栈满/空**：
+
+```c
+bool IsFull(Stack *S){
+    return S -> top == S -> maxSize - 1;
+}
+
+bool IsEmpty(Stack *S){
+    return S -> top == -1;
+}
+```
+
+**获取栈顶元素**：
+
+```c
+bool Top(Stack *S, ElementType *x){
+    if(IsEmpty(S))
+        return false;
+    *x = S -> element[S -> top];
+    return true;
+}
+```
+
+**入栈操作（插入元素）**：
+
+```c
+bool Push(Stack *S, ElementType x){
+    if(IsFull(S))
+        return false;
+    S -> top++;
+    S -> element[S -> top] = x;
+    return true;
+}
+```
+
+**出栈操作（删除栈顶元素）**：
+
+```c
+bool Pop(Stack *S){
+    if(IsEmpty(S))
+        return false;
+    S -> top--;
+    return true;
+}
+```
+
+#### 堆栈的链接表示
+
+堆栈也可以用链接方式表示，栈顶指针top指向栈顶元素结点
+
+链接方式表示的堆栈又称链式栈，其实现方法类似于单链表
+
+```c
+typedef struct node{
+    ElementType element;
+    struct node *link;
+}Node;
+
+typedef struct stack{
+    Node *top;
+}Stack;
+
+// 入栈
+void Push(Stack *S, ElementType x){
+    Node *p = (Node*)malloc(sizeof(Node));
+    p -> element = x;
+    p -> link = NULL;
+    p -> link = S -> top;
+    S -> top = p;
+}
+
+// 出栈
+void Pop(Stack *S){
+    if(S -> top == NULL)
+        return;
+    Node *p = S -> top;
+    S -> top = p -> link;
+    free(p);
+}
+```
+
+
+
+### 队列
+
+- 队列（Queue）是限定数据元素的插入在表的一端，数据元素的删除在表的另一端的线性结构
+- 设有队列 $$Q=(a_0,a_1.…,a_{n-1})$$ ，称 $$a_0$$ 是队头元素， $$a_{n-1}$$ 是队尾元素；数据插入在队尾进行，而数据删除在队头进行
+
+![](./image/z4.png)
+
+![](./image/z5.png)
+
+**ADT Queue** {
+
+数据：
+
+$$n$$ 个元素的线性序列 $$(a_0,a_1.….,a_{n-1})$$ ，其最大允许长度为maxSize，且 $$0≤n<maxSize$$
+
+运算：
+
+**Create(Q,maxSize)**：建立一个最多能存储maxSize个元素的空队列Q
+
+**Destroy(Q)**：释放队列Q申请的存储空间
+
+**IsEmpty(Q)**：若队列Q空，则返回TRUE;否则返回
+
+**FALSEIsFul(Q)**：若队列Q已满，则返回TRUE;否则返回FALSE
+
+**Front(Q,x)**：获取队列Q的队头元素，并通过x返回。操作成功返回TRUE;否则返回FALSE
+
+**EnQueue(Q,x)**：在队列Q的队尾插入元素x(入队操作)，成功返回TRUE;否则返回FALSE
+
+**DeQueue(Q)**：从队列Q中删除队头元素(出队操作)，成功返回TRUE;否则返回FALSE
+
+**Clear(Q)**：清除队列中全部元素
+
+}
+
+![](./image/z6.png)
+
+#### 队列的顺序表示
+
+**顺序队列的假溢出问题**
+
+![](./image/q2.png)
+
+如何解决“假溢出”的问题？
+
+**循环队列**
+
+把数组从逻辑上看成是一个头尾相连的环
+
+![](./image/q3.png)
+
+**为什么front指向一个不可用的空间，而不是直接指向队头元素？**
+
+因为需要一个不可用的空间，来区别队列判空和判满的条件
+
+#### 队列的实现
+
+结构体：
+
+```c
+typedef struct queue Queue;
+
+struct queue{
+    int front;              // 队头元素的前一单元的位置下标
+    int rear;               // 队尾元素的位置下标
+    int maxSize;            // 队列空间的最大容量
+    ElementType *element;   // 队列元素的数组首地址
+};
+```
+
+**创建空队列**：
+
+```c
+void Create(Queue *q, int mSize){
+    q -> maxSize = mSize;
+    q -> element = (ElementType*)malloc(sizeof(ElementType)*mSize);
+    q -> front = q -> rear = 0;
+}
+```
+
+**销毁/清除**：
+
+```c
+void Destroy(Queue *q){
+    free(q -> element);
+    q -> maxSize = -1;
+    q -> front = q -> rear = -1;
+}
+
+void Clear(Queue *q){
+    q -> front = q -> rear = 0;
+}
+```
+
+**判断空/满**：
+
+```c
+bool IsEmpty(Queue *q){
+    return q -> front == q -> rear;
+}
+
+bool IsFull(Queue *q){
+    return (q -> rear + 1) % q -> maxSize == q -> front; 
+}
+```
+
+**返回队头元素**：
+
+```c
+bool Front(Queue *q, ElementType *x){
+    if(IsEmpty(q))
+        return false;
+    *x = q -> element[(q -> front + 1) % q -> maxSize];
+    return true;
+}
+```
+
+**插入元素**：
+
+```c
+bool EnQueue(Queue *q, ElementType x){
+    if(IsFull(q))
+        return false;
+    q -> rear = (q -> rear + 1) % q -> maxSize;
+    q -> element[q -> rear] = x;
+    return true;
+}
+```
+
+**删除队头元素**：
+
+```c
+bool DeQueue(Queue *q){
+    if(IsEmpty(q))
+        return false;
+    q -> front = (q -> front + 1) % q -> maxSize;
+    return true;
+}
+```
+
+#### 队列的链接表示
+
+- 队列也可以用链接方式表示，队头指针front和队尾指针rear分别指向队头结点和队尾结点
+- 链接方式表示的队列又称**链式队列**，其实现方法类似于单链表
+
+![](./image/q4.png)
+
+```c
+typedef struct node{
+    ElementType element;
+    struct node *link;
+}Node;
+
+typedef struct queue{
+    Node *front;
+    Node *rear;
+}Queue;
+
+// 进队操作
+void EnQueue(Queue *Q, ElementType x){
+    Node *p = (Node*)malloc(sizeof(Node));
+    p -> element = x;
+    p -> link = NULL;
+    q -> rear -> link = p;
+    q -> rear = p;
+}
+
+// 出队操作
+void DeQueue(Queue *q){
+    if(q -> front == NULL)
+        return;
+    Node *p = q -> front;
+    q -> front = p -> link;
+    free(p);
+    // 若出队后，队列为空，则需重置rear
+    if(q -> front == NULL)
+        q -> rear = NULL;
+}
+
+```
+
+### 表达式
+
+**表达式的概念**
+
+表达式：由操作数、操作符(+、-、*、\等)和界限符(括号等)组成
+
+中缀表达式；操作符在两个操作数之间的表达式（示例：a + b）
+
+前缀表达式：操作符在两个操作数之前的表达式（示例：+ a b）
+
+后缀表达式：操作符在两个操作数之后的表达式（示例： a b +）
+
+**逆波兰表达式就是典型的后缀表达式**
+
+中缀表达式 a + b vs 后缀表达式 a b +
+
+- a **+** ( b **-** c ) 计算的顺序由**界符、操作符优先级决定**
+- a b c **-** **+**     计算的顺序只取决于操作符的扫描顺序
+
+对 比：
+
+- 操作数的顺序相同，而操作符的顺序不同
+- 前者的不同操作符的运算优先级存在差异，后者的所有操作符的运算优先级相同
+- 前者可以有界限符，后者没有界限符
+
+#### 后缀表达式求值
+
+**算法(利用堆栈实现)**：
+
+1.从左往右顺序依次扫描后缀表达式中的元素：
+
+- 若当前扫描元素是操作数，则将操作数进栈
+- 若当前扫描元素是操作符，则从栈中弹出两个操作数，并执行该操作符指定的运算，然后将计算结果进栈
+
+2.当表达式扫描结束，弹出栈顶数据，该数据即为计算结果
+
+E.g：
+
+```c
+6 4 2 - / 3 2 * +
+
+6/(4-2)+3*2=9
+```
+
+![](./image/q5.png)
+
+#### 中缀表达式到后缀表达式的转换
+
+中缀表达式(输入) ----------> 后缀表达式(输出)
+
+`a/(b-c)+d*e` --------------> `a b c - / d e *`
+
+注意：
+
+- 只考虑左结合的双目运算
+- 中缀表达式是由运算符、操作数和括号组成
+
+**转换算法**
+
+（1）初始化堆栈，并将“#”进栈
+
+（2）顺序扫描中缀表达式中的每一个元素(这里的元素是指表达式中的操作数、操作符或界符)，执行如下步骤：
+
+步骤 ①：若当前扫描元素为操作数，则直接输出
+
+步骤 ②：若当前扫描元素为 ”)”，则连续出栈输出，直到遇到 “(” 出栈为止 。“(” 只出栈，不输出)
+
+步骤 ③：若当前扫描元素为操作符或“(”，则将该元素的 **栈外优先级** 与栈顶元素的 **栈内优先级** 进行大小比较：若前者较小，则连续出栈输出，**直到前者大于后者时，停止出栈**。此时，再将该元素进栈
+
+（3）扫描结束，输出栈中其他元素 (#除外)
+
+![](./image/q6.png)
+
+| 扫描项 | 操作                                                         | 栈            | 输出      |
+| ------ | ------------------------------------------------------------ | ------------- | --------- |
+|        | #进栈（初始时）                                              | #             |           |
+| a      | a输出                                                        | #             | a         |
+| /      | icp( '/' ) > isp( '#' )， '/' 进栈                           | / #           | a         |
+| (      | icp( '(' ) > isp( '/' )， '(' 进栈                           | ( / #         | a         |
+| b      | b输出                                                        | ( / #         | ab        |
+| -      | icp( '-' ) > isp( '(' )， '-' 进栈                           | - ( / #       | ab        |
+| c      | c输出                                                        | - ( / #       | abc       |
+| )      | icp( ')' ) > isp( '-' )， '-' 出栈输出<br>icp( ')' ) == isp( '(' )， '(' 出栈但不输出 | ( / # <br>/ # | abc-      |
+| +      | icp( '+' ) < isp( '/' )， '/' 出栈输出<br/>icp( '+' ) > isp( '#' )， '+' 进栈 | #<br>+ #      | abc-/     |
+| d      | d输出                                                        | + #           | abc-/d    |
+| *      | icp( '*' ) > isp( '+' )， `*` 进栈                           | * + #         | abc-/d    |
+| e      | e输出                                                        | * + #         | abc-/de   |
+|        | 输出栈中剩余操作符                                           | #             | abc-/de*+ |
+
+### 递归
+
+直接递归：函数的实现过程中出现了对自身的调用
+
+间接递归：函数调用形成了一个环状调用链，例如函数A的实现过程中调用的B，而B的实现过程中又调用了A
+
+![](./image/q7.png)
+
+![](./image/q8.png)
+
+![](./image/q9.png)
+
+![](./image/q10.png)
+
+每进入一层递归将产生一个新的工作记录压入系统栈顶，每完成一次递归调用就从栈顶弹出一个工作记录
+
+- 工作记录:函数调用执行完成时的返回地址、局部变量、参数等信息
+- 系统栈:程序运行时存放函数调用工作记录的堆栈
+
+![](./image/q11.png)
+
+![](./image/q12.png)
 
 ## 数组
 
@@ -3411,7 +3889,6 @@ void MergeSort(List *list){
 - 该排序是**不稳定**的排序方法
 
 ```c
-// 修正后的 AdjustDown 函数（关键修改）
 void AdjustDown(Entry heap[], int current, int border) {
     int parent = current;
     Entry temp = heap[parent]; // 保存当前节点（整个结构体）
