@@ -153,23 +153,23 @@ link1.c（单链表的删除/插入）
 
 **线性表的运算**
 
-`Init(L)`：初始化运算。构造一个空的线性表L，若初始化成功，则返回OK，否则返回ERRO
+`Init(L)`：初始化运算。构造一个空的线性表 $$L$$ ，若初始化成功，则返回OK，否则返回ERRO
 
-`Destroy(L)`：撤销运算。判断线性表L是否存在，若已存在，则撤销线性表L;否则返回ERROR
+`Destroy(L)`：撤销运算。判断线性表 $$L$$ 是否存在，若已存在，则撤销线性表L;否则返回ERROR
 
-`IsEmpty(L)`：判空运算。判断线性表L是否为空，若为空，则返回OK;否则返回ERROR
+`IsEmpty(L)`：判空运算。判断线性表 $$L$$ 是否为空，若为空，则返回OK;否则返回ERROR
 
-`Length(L)`：求长度运算。若线性表L已存在，返回线性表L的元素个数;否则返回ERROR
+`Length(L)`：求长度运算。若线性表 $$L$$ 已存在，返回线性表L的元素个数;否则返回ERROR
 
-`Find(L,i)`：查找运算。若线性表L已存在且0≤i≤n-1，则查找线性表L中元素a;的值，查找成功返回OK;否则，返回ERROR
+`Find(L,i)`：查找运算。若线性表 $$L$$ 已存在且 $$0≤i≤n-1$$ ，则查找线性表L中元素a;的值，查找成功返回OK;否则，返回ERROR
 
-`Insert(L,i,x)`：插入运算。若线性表L已存在且-1≤i<n-1，则在元素a;之后插入新元素x，插入成功后返回OK，否则返回ERROR
+`Insert(L,i,x)`：插入运算。若线性表 $$L$$ 已存在且 $$-1≤i≤n-1$$ ，则在元素a;之后插入新元素x，插入成功后返回OK，否则返回ERROR
 
-`Delete(L,i)`：删除运算。若线性表L非空且0≤i<n-1，则删除元素a;，删除成功后返回OK，否则返回ERROR
+`Delete(L,i)`：删除运算。若线性表 $$L$$ 非空且 $$0≤i≤n-1$$ ，则删除元素 $$a$$ ，删除成功后返回OK，否则返回ERROR
 
-`Update(L,i,x)`：更新运算。若线性表L已存在且0≤i≤n-1，则将线性表L元素a;的值修改为x，否则返回ERROR
+`Update(L,i,x)`：更新运算。若线性表 $$L$$ 已存在且 $$0≤i≤n-1$$ ，则将线性表 $$L$$ 元素 $$a$$ 的值修改为 $$x$$ ，否则返回ERROR
 
-`Output(L)`：输出运算。若线性表L已存在，则输出线性表L中所有数据元素，否则返回ERROR
+`Output(L)`：输出运算。若线性表 $$L$$ 已存在，则输出线性表 $$L$$ 中所有数据元素，否则返回ERROR
 
 ### 线性表的顺序存储
 
@@ -206,7 +206,7 @@ Status Insert(SeqList *L, int i, ElemType x){
         return ERROR;
     if(L -> n == L -> maxlength)	// 判断顺序表是否已满
         return ERROR;
-    for(j = L -> n - 1; i > i; j--)
+    for(j = L -> n - 1; j > i; j--)
         L -> element[j + 1] = L -> element[j];
     L -> element[i + 1] = x;
     L -> n = L -> n + 1;
@@ -225,7 +225,7 @@ Status Delete(SeqList *L, int i){
     if(i < 0 || i > L -> n - 1)
        	return ERROR;
     if(!L -> n)
-        return ERROE;	//顺序表为空则删除失败
+        return ERROR;	//顺序表为空则删除失败
     for(j = i + 1; j < L -> n; j++)
         L -> element[j - 1] = L -> element[j];
     L -> n--;
@@ -295,7 +295,7 @@ typedef struct singleList{
 ```c
 bool Insert(SingleList *L, int i, ElementType x){
     Node *p, *q;
-    itn j;
+    int j;
     if(i < -1 || i > L -> n - 1)
         return false;
     p = L -> first;
@@ -304,7 +304,7 @@ bool Insert(SingleList *L, int i, ElementType x){
     q = malloc(sizeof(Node));
     q -> element = x;
     if(i -> -1){                // 插在链表中间
-        p -> link = q -> link;
+        q -> link = p -> link;
         p -> link = q;    
     }else{                      // 插在链表头结点之前
         q -> link = L -> first;

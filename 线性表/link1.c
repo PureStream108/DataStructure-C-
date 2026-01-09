@@ -21,7 +21,7 @@ int main(){
 
 bool Insert(SingleList *L, int i, ElementType x){
     Node *p, *q;
-    itn j;
+    int j;
     if(i < -1 || i > L -> n - 1)
         return false;
     p = L -> first;
@@ -30,7 +30,7 @@ bool Insert(SingleList *L, int i, ElementType x){
     q = malloc(sizeof(Node));
     q -> element = x;
     if(i -> -1){                // 插在链表中间
-        p -> link = q -> link;
+        q -> link = p -> link;
         p -> link = q;    
     }else{                      // 插在链表头结点之前
         q -> link = L -> first;
